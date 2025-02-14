@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 
-app = FastAPI()  # This is the main FastAPI app instance
+app = FastAPI()
 
 @app.get("/")
 def read_root():
-    return {"message": "Hello, FastAPI!"}
+    return {"message": "Backend is running!"}

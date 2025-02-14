@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trading Calculator</title>
+</head>
+<body>
+    <h1>Trading Calculator</h1>
+    <input type="number" id="inputValue" placeholder="Enter a number">
+    <button onclick="calculate()">Calculate</button>
+    <p>Result: <span id="result"></span></p>
+
+    <script>
+        async function calculate() {
+            const inputValue = document.getElementById("inputValue").value;
+            const response = await fetch("http://127.0.0.1:8000/calculate?value=" + inputValue);
+            const data = await response.json();
+            document.getElementById("result").innerText = data.result;
+        }
+    </script>
+</body>
+</html>
