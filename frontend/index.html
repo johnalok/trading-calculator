@@ -3,21 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trading Calculator</title>
+    <title>Trading Strategy Input</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        label { display: block; margin-top: 10px; }
+        input { padding: 5px; margin-top: 5px; width: 100px; }
+        button { margin-top: 10px; padding: 5px 10px; cursor: pointer; }
+    </style>
 </head>
 <body>
-    <h1>Trading Calculator</h1>
-    <input type="number" id="inputValue" placeholder="Enter a number">
-    <button onclick="calculate()">Calculate</button>
-    <p>Result: <span id="result"></span></p>
+    <h2>Enter Strategy Parameters</h2>
+    <form id="strategyForm">
+        <label>TP1 (pip): <input type="number" id="tp1" required></label>
+        <label>TP2 (pip): <input type="number" id="tp2" required></label>
+        <label>BE (pip): <input type="number" id="be" required></label>
+        <label>TP (pip): <input type="number" id="tp" required></label>
+        <label>TP1 %: <input type="number" id="tp1_percent" min="0" max="100" required></label>
+        <label>TP2 %: <input type="number" id="tp2_percent" min="0" max="100" required></label>
+        <button type="submit">Submit</button>
+    </form>
 
     <script>
-        async function calculate() {
-            const inputValue = document.getElementById("inputValue").value;
-            const response = await fetch("http://127.0.0.1:8000/calculate?value=" + inputValue);
-            const data = await response.json();
-            document.getElementById("result").innerText = data.result;
-        }
+        document.getElementById("strategyForm").addEventListener("submit", function(event) {
+            event.preventDefault(); // Prevent page reload
+
+            // Collect input values
+            const strategyData = {
+                tp1: parseFloat(document.getElementById("tp1").value),
+                tp2: parseFloat(document.getElementById("tp2").value),
+                be: parseFloat(document.getElementById("be").value),
+                tp: parseFloat(document.getElementById("tp").value),
+                tp1_percent: parseFloat(document.getElementById("tp1_percent").value),
+                tp2_percent: parseFloat(document.getElementById("tp2_percent").value)
+            };
+
+            console.log("Strategy Input:", strategyData); // Debugging output
+
+            // Send data to backend (adjust URL as needed)
+            fetch("http://127.0.0.1:8000/strategy", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(strategyData)
+            })
+            .then(response => response.json())
+            .then(data => console.log("Backend Response:", data))
+            .catch(error => console.error("Error:", error));
+        });
     </script>
-</<h1>Testing if HTML is loading</h1>>
+</body>
 </html>
