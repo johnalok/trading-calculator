@@ -9,6 +9,7 @@
         label { display: block; margin-top: 10px; }
         input { padding: 5px; margin-top: 5px; width: 100px; }
         button { margin-top: 10px; padding: 5px 10px; cursor: pointer; }
+        #results { margin-top: 20px; }
     </style>
 </head>
 <body>
@@ -20,35 +21,39 @@
         <label>TP (pip): <input type="number" id="tp" required></label>
         <label>TP1 %: <input type="number" id="tp1_percent" min="0" max="100" required></label>
         <label>TP2 %: <input type="number" id="tp2_percent" min="0" max="100" required></label>
+
+        <h3>Past Trades</h3>
+        <label>TP: <input type="number" id="past_tp" required></label>
+        <label>SL: <input type="number" id="past_sl" required></label>
+        <label>BE: <input type="number" id="past_be" required></label>
+        <label>Direction: 
+            <select id="past_direction">
+                <option value="long">Long</option>
+                <option value="short">Short</option>
+            </select>
+        </label>
+        
         <button type="submit">Submit</button>
     </form>
 
-    <script>
-        document.getElementById("strategyForm").addEventListener("submit", function(event) {
-            event.preventDefault(); // Prevent page reload
+    <!-- Hidden Calculation Fields -->
+    <div id="hiddenFields" style="display: none;">
+        <input type="hidden" id="hit_sl">
+        <input type="hidden" id="hit_be_no_profit">
+        <input type="hidden" id="hit_tp1_then_be">
+        <input type="hidden" id="hit_tp2">
+        <input type="hidden" id="outcome">
+    </div>
 
-            // Collect input values
-            const strategyData = {
-                tp1: parseFloat(document.getElementById("tp1").value),
-                tp2: parseFloat(document.getElementById("tp2").value),
-                be: parseFloat(document.getElementById("be").value),
-                tp: parseFloat(document.getElementById("tp").value),
-                tp1_percent: parseFloat(document.getElementById("tp1_percent").value),
-                tp2_percent: parseFloat(document.getElementById("tp2_percent").value)
-            };
+    <div id="results">
+        <h3>Calculation Results</h3>
+        <p>Hit SL: <span id="display_hit_sl"></span></p>
+        <p>Hit BE without profit: <span id="display_hit_be_no_profit"></span></p>
+        <p>Hit TP1 then BE: <span id="display_hit_tp1_then_be"></span></p>
+        <p>Hit TP2: <span id="display_hit_tp2"></span></p>
+        <p>Outcome: <span id="display_outcome"></span></p>
+    </div>
 
-            console.log("Strategy Input:", strategyData); // Debugging output
-
-            // Send data to backend (adjust URL as needed)
-            fetch("http://127.0.0.1:8000/strategy", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(strategyData)
-            })
-            .then(response => response.json())
-            .then(data => console.log("Backend Response:", data))
-            .catch(error => console.error("Error:", error));
-        });
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
