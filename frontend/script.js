@@ -1,39 +1,53 @@
-document.getElementById("strategyForm").addEventListener("submit", function(event) {
-  event.preventDefault(); // Prevent page reload
+document.getElementById("strategyForm").addEventListener("submit", async function(event) {
+    event.preventDefault();
 
-  // Collect strategy input values
-  const strategyData = {
-      tp1: parseFloat(document.getElementById("tp1").value),
-      tp2: parseFloat(document.getElementById("tp2").value),
-      be: parseFloat(document.getElementById("be").value),
-      tp: parseFloat(document.getElementById("tp").value),
-      tp1_percent: parseFloat(document.getElementById("tp1_percent").value),
-      tp2_percent: parseFloat(document.getElementById("tp2_percent").value)
-  };
+    const getFloat = (id) => {
+        const value = parseFloat(document.getElementById(id).value);
+        return isNaN(value) ? 0 : value;  // Prevent sending "NaN"
+    };
 
-  // Collect past trades input values
-  const pastTradesData = {
-      tp: parseFloat(document.getElementById("past_tp").value),
-      sl: parseFloat(document.getElementById("past_sl").value),
-      be: parseFloat(document.getElementById("past_be").value),
-      direction: document.getElementById("direction").value // Long or Short
-  };
+    const data = {
+        tp1: getFloat("tp1"),
+        tp2: getFloat("tp2"),
+        be: getFloat("be"),
+        tp: getFloat("tp"),
+        tp1_percent: getFloat("tp1_percent"),
+        tp2_percent: getFloat("tp2_percent"),
+        past_tp: getFloat("past_tp"),
+        past_sl: getFloat("past_sl"),
+        past_be: getFloat("past_be"),
+        past_direction: document.getElementById("past_direction").value.trim() || "long" // Default to "long"
+    };
 
-  // Combine both datasets into one object
-  const requestData = {
-      strategy: strategyData,
-      past_trades: pastTradesData
-  };
+    try {
+        const response = await fetch("http://127.0.0.1:8000/calculate-strategy", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        });
 
-  console.log("Collected Data:", requestData); // Debugging output
+        const result = await response.json();
 
-  // Send data to backend
-  fetch("http://127.0.0.1:8000/calculate-strategy", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(requestData)
-  })
-  .then(response => response.json())
-  .then(data => console.log("Backend Response:", data))
-  .catch(error => console.error("Error:", error));
+        if (response.ok) {
+            console.log("Strategy received:", result);
+
+            document.getElementById("hit_sl").value = result.hit_sl;
+            document.getElementById("hit_be_no_profit").value = result.hit_be_no_profit;
+            document.getElementById("hit_tp1_then_be").value = result.hit_tp1_then_be;
+            document.getElementById("hit_tp2").value = result.hit_tp2;
+            document.getElementById("outcome").value = result.outcome;
+
+            document.getElementById("display_hit_sl").innerText = result.hit_sl;
+            document.getElementById("display_hit_be_no_profit").innerText = result.hit_be_no_profit;
+            document.getElementById("display_hit_tp1_then_be").innerText = result.hit_tp1_then_be;
+            document.getElementById("display_hit_tp2").innerText = result.hit_tp2;
+            document.getElementById("display_outcome").innerText = result.outcome;
+        } else {
+            console.error("Error:", result);
+        }
+    } catch (error) {
+        console.error("Request failed:", error);
+    }
 });

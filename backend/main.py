@@ -20,35 +20,18 @@ class StrategyInput(BaseModel):
     tp: float
     tp1_percent: float
     tp2_percent: float
-    tp_past: float
-    sl_past: float
-    be_past: float
-    direction_past: str
+    past_tp: float
+    past_sl: float
+    past_be: float
+    past_direction: str  # Keeping it as a string for "long" or "short"
 
-class StrategyOutput(BaseModel):
-    message: str
-    data: StrategyInput
-    hit_sl: bool
-    hit_be_without_profit: bool
-    hit_tp1_then_be: bool
-    hit_tp2: bool
-    outcome: str
-
-@app.post("/calculate-strategy", response_model=StrategyOutput)
+@app.post("/calculate-strategy")
 async def calculate_strategy(data: StrategyInput):
-    # Placeholder values (logic to be added later)
-    hit_sl = False
-    hit_be_without_profit = False
-    hit_tp1_then_be = False
-    hit_tp2 = False
-    outcome = "Pending Calculation"
-
     return {
         "message": "Strategy received",
-        "data": data,
-        "hit_sl": hit_sl,
-        "hit_be_without_profit": hit_be_without_profit,
-        "hit_tp1_then_be": hit_tp1_then_be,
-        "hit_tp2": hit_tp2,
-        "outcome": outcome
+        "hit_sl": 0,  # Placeholder until we implement calculations
+        "hit_be_no_profit": 0,
+        "hit_tp1_then_be": 0,
+        "hit_tp2": 0,
+        "outcome": "TBD"
     }
