@@ -10,7 +10,7 @@ document.getElementById("strategyForm").addEventListener("submit", async functio
         tp1: getFloat("tp1"),
         tp2: getFloat("tp2"),
         be: getFloat("be"),
-        tp: getFloat("tp"),
+        sl: getFloat("sl"),
         tp1_percent: getFloat("tp1_percent"),
         tp2_percent: getFloat("tp2_percent"),
         past_tp: getFloat("past_tp"),

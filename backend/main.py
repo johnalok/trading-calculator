@@ -17,7 +17,7 @@ class StrategyInput(BaseModel):
     tp1: float
     tp2: float
     be: float
-    tp: float
+    sl: float
     tp1_percent: float
     tp2_percent: float
     past_tp: float
