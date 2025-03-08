@@ -32,13 +32,26 @@ def calculate_hit_sl(past_sl , sl, be, past_tp):
     
     return None  # Or return "" if you prefer an empty string
 
+def calculate_hit_be_no_profit(hit_sl, be, tp1, past_tp):
+    if hit_sl == -1:
+        return None  # SL was hit, so no BE calculation
+
+    if (be >= be and be < tp1) or (past_tp >= be and past_tp < tp1):
+        return 0  # BE condition met
+
+    return None  # Default case
+
 # API Endpoint to process strategy data
 @app.post("/calculate-strategy")
 async def calculate_strategy(data: StrategyInput):
     # Compute "Hit SL"
     hit_sl = calculate_hit_sl(data.past_sl, data.sl, data.be, data.past_tp)
 
+    # Compute Hit BE without profit
+    hit_be_no_profit = calculate_hit_be_no_profit(hit_sl, data.be, data.tp1, data.past_tp)
+
     return {
         "message": "Strategy received",
-        "hit_sl": hit_sl
+        "hit_sl": hit_sl,
+        "hit_be_without_profit": hit_be_no_profit,
     }
