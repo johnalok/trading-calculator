@@ -20,7 +20,7 @@ document.getElementById("strategyForm").addEventListener("submit", async functio
     };
 
     try {
-        const response = await fetch("http://127.0.0.1:8000/calculate-strategy", {
+        const response = await fetch("http://127.0.0.1:8002/calculate-strategy", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"

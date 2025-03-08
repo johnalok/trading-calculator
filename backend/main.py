@@ -13,6 +13,7 @@ app.add_middleware(
     allow_headers=["*"],  # Allow all headers
 )
 
+# Define data structure for incoming request
 class StrategyInput(BaseModel):
     tp1: float
     tp2: float
@@ -23,15 +24,21 @@ class StrategyInput(BaseModel):
     past_tp: float
     past_sl: float
     past_be: float
-    past_direction: str  # Keeping it as a string for "long" or "short"
 
+# Function to calculate "Hit SL"
+def calculate_hit_sl(past_sl , sl, be, past_tp):
+    if past_sl >= sl or past_tp < be:
+        return -1
+    
+    return None  # Or return "" if you prefer an empty string
+
+# API Endpoint to process strategy data
 @app.post("/calculate-strategy")
 async def calculate_strategy(data: StrategyInput):
+    # Compute "Hit SL"
+    hit_sl = calculate_hit_sl(data.past_sl, data.sl, data.be, data.past_tp)
+
     return {
         "message": "Strategy received",
-        "hit_sl": 0,  # Placeholder until we implement calculations
-        "hit_be_no_profit": 0,
-        "hit_tp1_then_be": 0,
-        "hit_tp2": 0,
-        "outcome": "TBD"
+        "hit_sl": hit_sl
     }
