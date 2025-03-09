@@ -35,13 +35,13 @@ document.getElementById("strategyForm").addEventListener("submit", async functio
 
             document.getElementById("hit_sl").value = result.hit_sl;
             document.getElementById("hit_be_no_profit").value = result.hit_be_without_profit;  // FIXED
-            document.getElementById("hit_tp1_then_be").value = result.hit_tp1_then_be ?? "";
+            document.getElementById("hit_tp1_then_be").value = result.hit_tp1_then_be;
             document.getElementById("hit_tp2").value = result.hit_tp2 ?? "";
             document.getElementById("outcome").value = result.outcome ?? "";
 
             document.getElementById("display_hit_sl").innerText = result.hit_sl;
             document.getElementById("display_hit_be_no_profit").innerText = result.hit_be_without_profit;  // FIXED
-            document.getElementById("display_hit_tp1_then_be").innerText = result.hit_tp1_then_be ?? "";
+            document.getElementById("display_hit_tp1_then_be").innerText = result.hit_tp1_then_be;
             document.getElementById("display_hit_tp2").innerText = result.hit_tp2 ?? "";
             document.getElementById("display_outcome").innerText = result.outcome ?? "";
         } else {
