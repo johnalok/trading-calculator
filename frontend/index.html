@@ -6,44 +6,47 @@
     <title>Trading Strategy Input</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; }
-        label { display: block; margin-top: 10px; }
-        input { padding: 5px; margin-top: 5px; width: 100px; }
-        button { margin-top: 10px; padding: 5px 10px; cursor: pointer; }
+        input, select { padding: 5px; width: 100px; }
+        button { padding: 5px 10px; cursor: pointer; margin-top: 10px; }
         #results { margin-top: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid black; padding: 5px; text-align: center; }
     </style>
 </head>
 <body>
     <h2>Enter Strategy Parameters</h2>
     <form id="strategyForm">
-        <label>tp1: <input type="number" id="tp1" required></label>
-        <label>tp2: <input type="number" id="tp2" required></label>
-        <label>be: <input type="number" id="be" required></label>
-        <label>sl: <input type="number" id="sl" required></label>
-        <label>tp1_percent: <input type="number" id="tp1_percent" min="0" max="100" required></label>
-        <label>tp2_percent: <input type="number" id="tp2_percent" min="0" max="100" required></label>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <label>tp1: <input type="number" id="tp1" required></label>
+            <label>tp2: <input type="number" id="tp2" required></label>
+            <label>be: <input type="number" id="be" required></label>
+            <label>sl: <input type="number" id="sl" required></label>
+            <label>tp1_percent: <input type="number" id="tp1_percent" min="0" max="100" required></label>
+            <label>tp2_percent: <input type="number" id="tp2_percent" min="0" max="100" required></label>
+        </div>
 
         <h3>Past Trades</h3>
-        <label>past_tp: <input type="number" id="past_tp" required></label>
-        <label>past_sl: <input type="number" id="past_sl" required></label>
-        <label>past_be: <input type="number" id="past_be" required></label>
-        <label>past_direction: 
-            <select id="past_direction">
-                <option value="long">Long</option>
-                <option value="short">Short</option>
-            </select>
-        </label>
-        
+        <p>Rows: <span id="rowCountDisplay">1</span>/30</p> <!-- Row count display -->
+        <table id="pastTradesTable">
+            <thead>
+                <tr>
+                    <th>past_tp</th>
+                    <th>past_sl</th>
+                    <th>past_be</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="past-trade-row">
+                    <td><input type="number" class="past_tp" placeholder="Past TP"></td>
+                    <td><input type="number" class="past_sl" placeholder="Past SL"></td>
+                    <td><input type="number" class="past_be" placeholder="Past BE"></td>
+                </tr>
+            </tbody>
+        </table>
+        <button type="button" id="addRow">Add Row</button>
+        <button type="button" id="removeRow">Remove Row</button>
         <button type="submit">Submit</button>
     </form>
-
-    <!-- Hidden Calculation Fields -->
-    <div id="hiddenFields" style="display: none;">
-        <input type="hidden" id="hit_sl">
-        <input type="hidden" id="hit_be_no_profit">
-        <input type="hidden" id="hit_tp1_then_be">
-        <input type="hidden" id="hit_tp2">
-        <input type="hidden" id="outcome">
-    </div>
 
     <div id="results">
         <h3>Calculation Results</h3>
