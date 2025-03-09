@@ -59,6 +59,10 @@ def calculate_hit_tp2(hit_sl, hit_be_without_profit, past_tp, tp2, sl, tp2_perce
         return ""  # Condition 3: If both SL and BE without profit are empty, return empty
     return None  # Fallback case
 
+def calculate_outcome(hit_sl, hit_be_without_profit, hit_tp1_then_be, hit_tp2):
+    total = sum(filter(None, [hit_sl, hit_be_without_profit, hit_tp1_then_be, hit_tp2]))
+    return round(total, 2)  # Keep it within 2 decimals
+
 # API Endpoint to process strategy data
 @app.post("/calculate-strategy")
 async def calculate_strategy(data: StrategyInput):
@@ -74,6 +78,9 @@ async def calculate_strategy(data: StrategyInput):
     # Compute "Hit TP2"
     hit_tp2 = "" if hit_sl == -1 or hit_be_no_profit == 0 else calculate_hit_tp2(hit_sl, hit_be_no_profit, data.past_tp, data.tp2, data.sl, data.tp2_percent)
 
+    # Compute Outcome
+    outcome = calculate_outcome(hit_sl, hit_be_no_profit, hit_tp1_then_be, hit_tp2)
+
 
     return {
         "message": "Strategy received",
@@ -81,4 +88,5 @@ async def calculate_strategy(data: StrategyInput):
         "hit_be_without_profit": hit_be_no_profit,
         "hit_tp1_then_be": hit_tp1_then_be,
         "hit_tp2": hit_tp2,
+        "outcome": outcome,
     }
