@@ -43,7 +43,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const getFloat = (id) => {
             const value = parseFloat(document.getElementById(id).value);
-            return isNaN(value) ? 0 : value; // Prevent NaN
+            return isNaN(value) ? 0 : value;
         };
 
         // Collect past trades dynamically
@@ -64,7 +64,7 @@ document.addEventListener("DOMContentLoaded", function () {
             sl: getFloat("sl"),
             tp1_percent: getFloat("tp1_percent"),
             tp2_percent: getFloat("tp2_percent"),
-            past_trades: pastTrades,  // Send all past trades as a list
+            past_trades: pastTrades,
         };
 
         try {
@@ -81,7 +81,6 @@ document.addEventListener("DOMContentLoaded", function () {
             if (response.ok) {
                 console.log("Strategy received:", result);
 
-                // Update results in form
                 document.getElementById("display_hit_sl").innerText = result.hit_sl;
                 document.getElementById("display_hit_be_no_profit").innerText = result.hit_be_without_profit;
                 document.getElementById("display_hit_tp1_then_be").innerText = result.hit_tp1_then_be;
@@ -95,6 +94,5 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // Initialize row count
     updateRowCount();
 });
