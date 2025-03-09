@@ -50,6 +50,15 @@ def calculate_hit_tp1_then_be(hit_sl, hit_be_without_profit, past_tp, tp1, sl, t
         return ""  # Condition 3: If both SL and BE without profit are empty, return empty
     return None  # Fallback case
 
+def calculate_hit_tp2(hit_sl, hit_be_without_profit, past_tp, tp2, sl, tp2_percent):
+    if hit_sl not in [None, "", -1] and hit_be_without_profit not in [None, "", 0]:
+        return ""  # Condition 1: If SL or BE without profit is hit, return empty
+    elif past_tp >= tp2:
+        return (tp2 / sl) * (tp2_percent / 100)  # Condition 2: If TP >= TP2, apply calculation
+    elif hit_sl == "" and hit_be_without_profit == "":
+        return ""  # Condition 3: If both SL and BE without profit are empty, return empty
+    return None  # Fallback case
+
 # API Endpoint to process strategy data
 @app.post("/calculate-strategy")
 async def calculate_strategy(data: StrategyInput):
@@ -62,10 +71,14 @@ async def calculate_strategy(data: StrategyInput):
     # Compute "Hit TP1 then BE"
     hit_tp1_then_be = "" if hit_sl == -1 or hit_be_no_profit == 0 else calculate_hit_tp1_then_be(hit_sl, hit_be_no_profit, data.past_tp, data.tp1, data.sl, data.tp1_percent)
 
+    # Compute "Hit TP2"
+    hit_tp2 = "" if hit_sl == -1 or hit_be_no_profit == 0 else calculate_hit_tp2(hit_sl, hit_be_no_profit, data.past_tp, data.tp2, data.sl, data.tp2_percent)
+
 
     return {
         "message": "Strategy received",
         "hit_sl": hit_sl,
         "hit_be_without_profit": hit_be_no_profit,
         "hit_tp1_then_be": hit_tp1_then_be,
+        "hit_tp2": hit_tp2,
     }
