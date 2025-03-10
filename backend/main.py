@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from typing import List
+from typing import List, Union
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
@@ -30,27 +30,39 @@ class StrategyInput(BaseModel):
     past_trades: List[PastTrade]
 
 # Calculation Functions
-def calculate_hit_sl(past_sl, sl, be, past_tp):
+def calculate_hit_sl(past_sl: float, sl: float, be: float, past_tp: float) -> int:
     return -1 if past_sl >= sl or past_tp < be else 0
 
-def calculate_hit_be_no_profit(hit_sl, past_be, be, tp1, past_tp):
-    return 0 if hit_sl == -1 else (1 if (past_be >= be and past_be < tp1) or (past_tp >= be and past_tp < tp1) else 0)
+def calculate_hit_be_no_profit(hit_sl: int, past_be: float, be: float, tp1: float, past_tp: float) -> Union[int, str]:
+    if hit_sl == -1:
+        return ""
+    return 0 if (past_be < tp1 and past_be >= be) or (past_tp < tp1 and past_tp >= be) else ""
 
-def calculate_hit_tp1_then_be(hit_sl, hit_be_without_profit, past_tp, tp1, sl, tp1_percent):
-    return 0 if hit_sl == -1 or hit_be_without_profit == 1 else ((tp1 / sl) * (tp1_percent / 100) if past_tp >= tp1 else 0)
+def calculate_hit_tp1_then_be(hit_sl: int, hit_be_without_profit: Union[int, str], past_tp: float, tp1: float, sl: float, tp1_percent: float) -> float:
+    if hit_sl == -1 or hit_be_without_profit == 0 or sl == 0:
+        return 0
+    return (tp1 / sl) * (tp1_percent / 100) if past_tp >= tp1 else 0
 
-def calculate_hit_tp2(hit_sl, hit_be_without_profit, past_tp, tp2, sl, tp2_percent):
-    return 0 if hit_sl == -1 or hit_be_without_profit == 1 else ((tp2 / sl) * (tp2_percent / 100) if past_tp >= tp2 else 0)
+def calculate_hit_tp2(hit_sl: int, hit_be_without_profit: Union[int, str], past_tp: float, tp2: float, sl: float, tp2_percent: float) -> float:
+    if hit_sl == -1 or hit_be_without_profit == 0 or sl == 0:
+        return 0
+    return (tp2 / sl) * (tp2_percent / 100) if past_tp >= tp2 else 0
 
-def calculate_outcome(hit_sl, hit_be_without_profit, hit_tp1_then_be, hit_tp2):
-    return round(sum([hit_sl, hit_be_without_profit, hit_tp1_then_be, hit_tp2]), 2)
+def calculate_outcome(hit_sl: int, hit_be_without_profit: Union[int, str], hit_tp1_then_be: float, hit_tp2: float) -> float:
+    return round(sum([
+        hit_sl, 
+        0 if hit_be_without_profit == "" else hit_be_without_profit, 
+        hit_tp1_then_be, 
+        hit_tp2
+    ]), 2)
 
 # API Endpoint
 @app.post("/calculate-strategy")
 async def calculate_strategy(data: StrategyInput):
-    # Filter out empty rows
-    valid_trades = [trade for trade in data.past_trades if trade.past_tp or trade.past_sl or trade.past_be]
+    # Filter out empty past trade rows
+    valid_trades = [trade for trade in data.past_trades if any([trade.past_tp, trade.past_sl, trade.past_be])]
 
+    # Initialize totals
     total_hit_sl = 0
     total_hit_be_without_profit = 0
     total_hit_tp1_then_be = 0
@@ -66,16 +78,20 @@ async def calculate_strategy(data: StrategyInput):
 
         # Sum up results
         total_hit_sl += hit_sl
-        total_hit_be_without_profit += hit_be_no_profit
+        total_hit_be_without_profit += 0 if hit_be_no_profit == "" else hit_be_no_profit
         total_hit_tp1_then_be += hit_tp1_then_be
         total_hit_tp2 += hit_tp2
         total_outcome += outcome
 
+    # Format response to show empty fields for 0 values
+    def format_value(value: float) -> Union[str, float]:
+        return "" if value == 0 else round(value, 2)
+
     return {
         "message": "Strategy received",
-        "hit_sl": total_hit_sl,
-        "hit_be_without_profit": total_hit_be_without_profit,
-        "hit_tp1_then_be": round(total_hit_tp1_then_be, 2),
-        "hit_tp2": round(total_hit_tp2, 2),
-        "outcome": round(total_outcome, 2),
+        "hit_sl": format_value(total_hit_sl),
+        "hit_be_without_profit": format_value(total_hit_be_without_profit),
+        "hit_tp1_then_be": format_value(total_hit_tp1_then_be),
+        "hit_tp2": format_value(total_hit_tp2),
+        "outcome": format_value(total_outcome),
     }
