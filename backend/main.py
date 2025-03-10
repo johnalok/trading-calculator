@@ -1,20 +1,20 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
-# Add CORS middleware to allow frontend requests
+# CORS Middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins (for development only)
+    allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["*"],  # Allow all methods (GET, POST, etc.)
-    allow_headers=["*"],  # Allow all headers
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
-# Define data structure for incoming request
+# Define Past Trade Structure
 class PastTrade(BaseModel):
     past_tp: float
     past_sl: float
@@ -27,50 +27,37 @@ class StrategyInput(BaseModel):
     sl: float
     tp1_percent: float
     tp2_percent: float
-    past_trades: List[PastTrade]  # List of past trades
+    past_trades: List[PastTrade]
 
-# Function to calculate "Hit SL"
+# Calculation Functions
 def calculate_hit_sl(past_sl, sl, be, past_tp):
-    if past_sl >= sl or past_tp < be:
-        return -1
-    return 0  # If SL isn't hit, return 0 (neutral)
+    return -1 if past_sl >= sl or past_tp < be else 0
 
 def calculate_hit_be_no_profit(hit_sl, past_be, be, tp1, past_tp):
-    if hit_sl == -1:
-        return 0  # SL was hit, no BE calculation
-    if (past_be >= be and past_be < tp1) or (past_tp >= be and past_tp < tp1):
-        return 0  # BE condition met
-    return 0  # Default case
+    return 0 if hit_sl == -1 else (1 if (past_be >= be and past_be < tp1) or (past_tp >= be and past_tp < tp1) else 0)
 
 def calculate_hit_tp1_then_be(hit_sl, hit_be_without_profit, past_tp, tp1, sl, tp1_percent):
-    if hit_sl == -1 or hit_be_without_profit == 1:
-        return 0  # If SL or BE without profit is hit, return 0
-    elif past_tp >= tp1:
-        return (tp1 / sl) * (tp1_percent / 100)  # Apply calculation
-    return 0  # Fallback case
+    return 0 if hit_sl == -1 or hit_be_without_profit == 1 else ((tp1 / sl) * (tp1_percent / 100) if past_tp >= tp1 else 0)
 
 def calculate_hit_tp2(hit_sl, hit_be_without_profit, past_tp, tp2, sl, tp2_percent):
-    if hit_sl == -1 or hit_be_without_profit == 1:
-        return 0  # If SL or BE without profit is hit, return 0
-    elif past_tp >= tp2:
-        return (tp2 / sl) * (tp2_percent / 100)  # Apply calculation
-    return 0  # Fallback case
+    return 0 if hit_sl == -1 or hit_be_without_profit == 1 else ((tp2 / sl) * (tp2_percent / 100) if past_tp >= tp2 else 0)
 
 def calculate_outcome(hit_sl, hit_be_without_profit, hit_tp1_then_be, hit_tp2):
-    total = sum([hit_sl, hit_be_without_profit, hit_tp1_then_be, hit_tp2])
-    return round(total, 2)  # Keep it within 2 decimals
+    return round(sum([hit_sl, hit_be_without_profit, hit_tp1_then_be, hit_tp2]), 2)
 
-# API Endpoint to process strategy data
+# API Endpoint
 @app.post("/calculate-strategy")
 async def calculate_strategy(data: StrategyInput):
+    # Filter out empty rows
+    valid_trades = [trade for trade in data.past_trades if trade.past_tp or trade.past_sl or trade.past_be]
+
     total_hit_sl = 0
     total_hit_be_without_profit = 0
     total_hit_tp1_then_be = 0
     total_hit_tp2 = 0
     total_outcome = 0  
 
-    for trade in data.past_trades:
-        # Compute individual trade results
+    for trade in valid_trades:
         hit_sl = calculate_hit_sl(trade.past_sl, data.sl, data.be, trade.past_tp)
         hit_be_no_profit = calculate_hit_be_no_profit(hit_sl, trade.past_be, data.be, data.tp1, trade.past_tp)
         hit_tp1_then_be = calculate_hit_tp1_then_be(hit_sl, hit_be_no_profit, trade.past_tp, data.tp1, data.sl, data.tp1_percent)
